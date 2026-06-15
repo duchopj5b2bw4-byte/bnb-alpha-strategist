@@ -1,3 +1,0 @@
-AgentIdentity deployed at: 0x538fd54Db066AEDBF13cf78832edCdEE8173c981
-Explorer: https://explorer.sepolia.mantle.xyz/address/0x538fd54Db066AEDBF13cf78832edCdEE8173c981
-Deployed: 2026-06-12T03:26:59.915Z

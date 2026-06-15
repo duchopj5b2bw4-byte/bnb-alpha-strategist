@@ -1,24 +1,25 @@
-# Mantle Alpha Hunter
+# BNB Alpha Strategist
 
-On-chain intelligence dashboard for Mantle Network. AI-powered wallet analysis, transaction tracking, and smart labeling.
+AI-powered trading strategy engine for **BNB Hack: AI Trading Agent Edition** (Track 2: Strategy Skills).
 
-Built for **Turing Test Hackathon 2026** — AI Alpha & Data track.
+Backtestable strategy specs powered by **CoinMarketCap Agent Hub** real-time data and **OpenRouter AI** (GPT-4o-mini).
 
 ## Features
 
-- **Wallet Analysis** — Enter any Mantle address for instant AI analysis (GPT-4o-mini)
-- **Risk Scoring** — Auto-classified risk levels (low/medium/high) and activity scores
-- **Smart Labels** — AI tags wallets as whale, trader, DEX user, bridge user, etc.
-- **Transaction History** — Real-time on-chain activity from Mantle testnet
-- **Alpha Leaderboard** — Top wallets ranked by activity score
-- **Share on X** — One-click share analysis results
+- **Strategy Generation** — Enter any token symbol, get AI-generated entry/exit/stop-loss rules
+- **CMC Real-Time Data** — Price, 24h change, volume, market cap, Fear & Greed Index
+- **Market Regime Detection** — Bullish/Bearish/Neutral/Volatile classification
+- **Leaderboard** — Live rankings of top token strategies by confidence/risk
+- **Backtestable Specs** — Clean strategy output exportable as Markdown
+- **Share on X** — One-click share strategy to Twitter
 
 ## Stack
 
 - Next.js 14 (App Router) + TypeScript
 - Tailwind CSS
-- ethers.js v6 — Mantle RPC
-- OpenAI GPT-4o-mini — AI analysis
+- CoinMarketCap Pro API — Market data
+- OpenRouter (GPT-4o-mini) — AI strategy generation
+- BSC RPC — BNB Chain price
 - Vercel — Hosting
 
 ## Setup
@@ -26,7 +27,7 @@ Built for **Turing Test Hackathon 2026** — AI Alpha & Data track.
 ```bash
 npm install
 cp .env.example .env.local
-# Add your OPENAI_API_KEY
+# Fill in your API keys
 npm run dev
 ```
 
@@ -34,15 +35,18 @@ npm run dev
 
 | Variable | Description |
 |---|---|
-| `OPENAI_API_KEY` | OpenAI API key for AI analysis |
-| `MANTLE_RPC` | Mantle RPC URL (defaults to testnet) |
+| `CMC_API_KEY` | CoinMarketCap Pro API key (free) |
+| `BSC_RPC` | BNB Chain RPC URL |
+| `OPENAI_API_KEY` | OpenAI / OpenRouter API key |
+| `OPENAI_BASE_URL` | API base URL (OpenRouter: `https://openrouter.ai/api/v1`) |
+| `OPENAI_MODEL` | Model name (default: `gpt-4o-mini`) |
 
-## Deploy
+## Live Demo
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new)
+https://bnb-alpha-strategist.vercel.app
 
-## Contract
+## Submission
 
-`AgentIdentity.sol` — deployed to Mantle testnet for on-chain agent identity.
-
----
+- **Hackathon:** [BNB Hack: AI Trading Agent](https://dorahacks.io/hackathon/bnbhack-twt-cmc/)
+- **Track:** Strategy Skills ($6K)
+- **Deliverable:** Backtestable strategy spec powered by CMC Agent Hub
