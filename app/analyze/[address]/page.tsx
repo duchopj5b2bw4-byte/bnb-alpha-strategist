@@ -6,7 +6,7 @@ import StrategyDashboard from "@/components/StrategyDashboard";
 import ShareCard from "@/components/ShareCard";
 
 function specMarkdown(symbol: string, s: any) {
-  const lines = [
+  return [
     `# Strategy: ${s.strategy}`,
     `**Token:** ${symbol}`,
     `**Regime:** ${s.marketRegime}`,
@@ -24,12 +24,10 @@ function specMarkdown(symbol: string, s: any) {
     ``,
     `## Indicators`,
     s.indicators.map((i: string) => `- ${i}`).join("\n"),
-  ];
-  if (s.backtest) {
-    lines.push(``, `## Backtest Estimate (14d)`, `- Return: ${s.backtest.estimatedReturn}`, `- Win Rate: ${s.backtest.estimatedWinRate}`, `- Risk/Reward: ${s.backtest.riskRewardRatio}`, `- Max Drawdown: ${s.backtest.maxDrawdown}`);
-  }
-  lines.push(``, `## Reasoning`, s.reasoning);
-  return lines.join("\n");
+    ``,
+    `## Reasoning`,
+    s.reasoning,
+  ].join("\n");
 }
 
 export default function AnalyzePage({ params }: { params: Promise<{ address: string }> }) {

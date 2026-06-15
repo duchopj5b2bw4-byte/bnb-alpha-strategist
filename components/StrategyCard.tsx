@@ -1,12 +1,5 @@
 "use client";
 
-interface BacktestData {
-  estimatedReturn: string;
-  estimatedWinRate: string;
-  riskRewardRatio: string;
-  maxDrawdown: string;
-}
-
 interface StrategyCardProps {
   symbol: string;
   strategy: {
@@ -19,7 +12,6 @@ interface StrategyCardProps {
     indicators: string[];
     riskLevel: string;
     marketRegime: string;
-    backtest?: BacktestData;
   } | null;
   bnbPrice: number;
   loading: boolean;
@@ -88,33 +80,12 @@ export default function StrategyCard({ symbol, strategy, bnbPrice, loading }: St
           </div>
 
           {strategy.indicators.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-4">
+            <div className="flex flex-wrap gap-2">
               {strategy.indicators.map((indicator, i) => (
                 <span key={i} className="px-2 py-1 bg-purple-900/30 text-purple-300 text-xs rounded-full border border-purple-800/50">
                   {indicator}
                 </span>
               ))}
-            </div>
-          )}
-
-          {strategy.backtest && (
-            <div className="grid grid-cols-4 gap-2 pt-3 border-t border-gray-800">
-              <div className="text-center">
-                <p className="text-xs text-gray-500">Est. Return (14d)</p>
-                <p className={`text-sm font-mono ${strategy.backtest.estimatedReturn.startsWith("+") ? "text-green-400" : "text-red-400"}`}>{strategy.backtest.estimatedReturn}</p>
-              </div>
-              <div className="text-center">
-                <p className="text-xs text-gray-500">Win Rate</p>
-                <p className="text-sm font-mono text-gray-200">{strategy.backtest.estimatedWinRate}</p>
-              </div>
-              <div className="text-center">
-                <p className="text-xs text-gray-500">R:R Ratio</p>
-                <p className="text-sm font-mono text-gray-200">{strategy.backtest.riskRewardRatio}</p>
-              </div>
-              <div className="text-center">
-                <p className="text-xs text-gray-500">Max DD</p>
-                <p className="text-sm font-mono text-red-400">{strategy.backtest.maxDrawdown}</p>
-              </div>
             </div>
           )}
         </>
