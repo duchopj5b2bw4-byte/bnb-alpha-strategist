@@ -79,11 +79,11 @@ API: /api/analyze?symbol=BTC
 6/15 ✅ 改 API 路由、前端 UI、组件
 6/15 ✅ P0: 底部 Strategy Spec + Copy as Markdown
 6/15 ✅ P1: Leaderboard 实时化 + Trending/Crypto Info
-6/16 → 配 OpenAI Key（手动）
-6/17 → P2: Demo 视频脚本，提交准备
-6/19 → 测试，修 bug
-6/20 → 录 Demo 视频，写提交文档
-6/21 12:00 UTC 截止 → 提交
+6/15 ✅ P0: OpenAI Key → OpenRouter 免费 API
+6/15 ✅ 部署 Vercel + GitHub 仓库
+6/15 ✅ 清理旧 Mantle 文件 + 重写 README/提交文档
+6/16 → 录 Demo 视频
+6/21 12:00 UTC 截止 → 提交 DoraHacks
 ```
 
 ## 关键链接
