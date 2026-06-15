@@ -1,0 +1,8 @@
+New wallet generated for Mantle testnet contract deployment
+
+Address:     0x88d2037c99572cB86a87e7636485aA42c9a47F42
+Private Key: 0xcc38db279942342307fd905d33111fbff13ca9621f563a3fd18c2914eb69cf7a
+Mnemonic:    basic abuse issue neck ensure label foil gadget fringe cost empty bird
+
+Generated: 2026-06-11
+Purpose: Deploy AgentIdentity.sol to Mantle testnet (Turing Test Hackathon 2026)
