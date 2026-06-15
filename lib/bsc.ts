@@ -77,9 +77,7 @@ export async function getBalance(address: string): Promise<string> {
   return ethers.formatEther(balance);
 }
 
-export async function getBnbPrice(): Promise<number> {
-  return 0;
-}
+
 
 export function shortenAddress(addr: string): string {
   return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
