@@ -3,8 +3,8 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 
 export const metadata: Metadata = {
-  title: "BNB Alpha Strategist",
-  description: "AI-powered trading strategies powered by CMC Agent Hub",
+  title: "BNB Alpha Strategist | AI Trading Strategies for BNB Hack 2026",
+  description: "AI-powered trading strategy generator backed by CMC Agent Hub data. Enter any token to get entry/exit/sl with backtest estimates. Built for BNB Hack: AI Trading Agent Edition.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

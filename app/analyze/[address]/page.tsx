@@ -76,12 +76,34 @@ export default function AnalyzePage({ params }: { params: Promise<{ address: str
 
   return (
     <div className="space-y-6">
-      <StrategyCard
-        symbol={data?.symbol || symbol}
-        strategy={data?.strategy || null}
-        bnbPrice={data?.bnbPrice || 0}
-        loading={loading}
-      />
+      {loading && !data ? (
+        <div className="bg-[#111] border border-gray-800 rounded-xl p-6 space-y-4 animate-pulse">
+          <div className="flex justify-between">
+            <div className="space-y-2">
+              <div className="h-3 w-12 bg-gray-800 rounded" />
+              <div className="h-6 w-24 bg-gray-800 rounded" />
+            </div>
+            <div className="text-right space-y-2">
+              <div className="h-3 w-16 bg-gray-800 rounded ml-auto" />
+              <div className="h-5 w-20 bg-gray-800 rounded ml-auto" />
+            </div>
+          </div>
+          <div className="h-3 w-3/4 bg-gray-800 rounded" />
+          <div className="h-3 w-1/2 bg-gray-800 rounded" />
+          <div className="grid grid-cols-3 gap-3">
+            <div className="h-16 bg-gray-800/50 rounded-lg" />
+            <div className="h-16 bg-gray-800/50 rounded-lg" />
+            <div className="h-16 bg-gray-800/50 rounded-lg" />
+          </div>
+        </div>
+      ) : (
+        <StrategyCard
+          symbol={data?.symbol || symbol}
+          strategy={data?.strategy || null}
+          bnbPrice={data?.bnbPrice || 0}
+          loading={false}
+        />
+      )}
 
       {data?.strategy && (
         <StrategyDashboard cmcData={data?.cmcData || {}} strategy={data.strategy} />
