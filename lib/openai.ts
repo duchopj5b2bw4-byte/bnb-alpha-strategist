@@ -145,12 +145,12 @@ function fallbackStrategy(symbol: string, bnbPrice: number, cmcData?: CMCDataBun
     const confidence = rsi > 30 && rsi < 70 ? "medium" : "low";
     const direction = change24h >= 0 ? "pullback entry on dips" : "momentum continuation";
 
-    const entryPct = 0.05;
-    const targetPct = Math.abs(change24h) > 0 ? Math.max(0.03, Math.abs(change24h) / 100 * 2) : 0.05;
-    const stopPct = Math.min(0.08, vol / 100);
-    const entryPrice = change24h >= 0 ? price * (1 - entryPct * 0.6) : price * 0.95;
+    const entryDip = change24h >= 0 ? 0.03 : 0.02;
+    const targetPct = Math.min(0.10, Math.max(0.03, Math.abs(change24h) / 100 * 2));
+    const stopPct = Math.max(0.03, Math.min(0.07, vol * 0.3 / 100));
+    const entryPrice = price * (1 - entryDip);
     const exitPrice = entryPrice * (1 + targetPct);
-    const stopPrice = entryPrice * (1 - Math.max(0.03, stopPct));
+    const stopPrice = entryPrice * (1 - stopPct);
     const rewardPct = ((exitPrice - entryPrice) / entryPrice) * 100;
     const riskPct = ((entryPrice - stopPrice) / entryPrice) * 100;
     const rr = riskPct > 0 ? (rewardPct / riskPct).toFixed(1) : "1.0";
