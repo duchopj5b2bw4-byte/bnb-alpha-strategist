@@ -19,6 +19,12 @@ export interface StrategyResult {
   indicators: string[];
   riskLevel: "low" | "medium" | "high";
   marketRegime: string;
+  backtest?: {
+    estimatedReturn: string;
+    estimatedWinRate: string;
+    riskRewardRatio: string;
+    maxDrawdown: string;
+  };
 }
 
 export type CMCDataBundle = Record<string, unknown>;
@@ -28,40 +34,60 @@ export async function generateStrategy(
   cmcData: CMCDataBundle,
   bnbPrice: number
 ): Promise<StrategyResult> {
-  const marketInfo = JSON.stringify(cmcData, null, 2);
-
   const token = cmcData?.tokenQuote as any;
   const fear = cmcData?.fearGreed as any;
   const metrics = cmcData?.globalMetrics as any;
   const info = cmcData?.cryptoInfo as any;
   const trendDirection = cmcData?.trendDirection as string;
+  const technicals = cmcData?.technicals as any;
+  const bscChain = cmcData?.bscChain as any;
+
+  const fgStr = fear?.value ? `${fear.value}/100 (${fear.value_classification})` : "N/A (Basic plan limitation)";
+  const techStr = technicals ? `RSI(14): ${technicals.rsi14.toFixed(0)}, Volatility: ${technicals.volatility24h.toFixed(1)}%, Trend: ${technicals.trendStrength}${technicals.isTrendConsistent ? " (consistent)" : " (divergent)"}` : "N/A";
+  const bscStr = bscChain ? `BSC Block: #${bscChain.blockNumber}, Gas: ${bscChain.gasPriceGwei} Gwei` : "N/A";
 
   const prompt = `You are BNB Alpha Strategist, an AI trading strategist for BNB Hack 2026. Generate a backtestable trading strategy for ${symbol}.
 
-Market Data:
-- Price: $${token?.price || bnbPrice}
-- 24h Change: ${token?.percent_change_24h ?? "N/A"}%
-- 7d Change: ${token?.percent_change_7d ?? "N/A"}%
+PRICE ACTION (1h / 24h / 7d):
+- 1h: ${token?.percent_change_1h ?? "N/A"}%
+- 24h: ${token?.percent_change_24h ?? "N/A"}%
+- 7d: ${token?.percent_change_7d ?? "N/A"}%
+- Current Price: $${token?.price?.toFixed(4) ?? bnbPrice}
 - 24h Volume: $${token?.volume_24h ? (token.volume_24h / 1e6).toFixed(0) : "N/A"}M
 - Market Cap: $${token?.market_cap ? (token.market_cap / 1e9).toFixed(2) : "N/A"}B
-- Fear & Greed: ${fear?.value ?? "N/A"}/100 (${fear?.value_classification ?? "N/A"})
-- Global Market Cap: $${metrics?.total_market_cap ? (metrics.total_market_cap / 1e12).toFixed(2) : "N/A"}T
-- BTC Dominance: ${metrics?.btc_dominance?.toFixed(1) ?? "N/A"}%
-- BNB Price: $${bnbPrice}
-- Trending: ${trendDirection}
-- Description: ${info?.description?.slice(0, 200) ?? "N/A"}
 
-Output ONLY valid JSON (no markdown, no code blocks):
+TECHNICAL INDICATORS:
+${techStr}
+
+MARKET CONTEXT:
+- Fear & Greed: ${fgStr}
+- Total Market Cap: $${metrics?.total_market_cap ? (metrics.total_market_cap / 1e12).toFixed(2) : "N/A"}T
+- BTC Dominance: ${metrics?.btc_dominance?.toFixed(1) ?? "N/A"}%
+- Trending: ${trendDirection}
+
+BNB CHAIN:
+- $${bnbPrice} per BNB
+- ${bscStr}
+
+INFO: ${info?.description?.slice(0, 300) ?? "N/A"}
+
+Analyze across all 3 timeframes (1h, 24h, 7d). Output ONLY valid JSON (no markdown, no code blocks):
 {
   "strategy": "one-sentence strategy name",
-  "entry": "clear, backtestable entry condition with price levels",
-  "exit": "clear, backtestable exit condition with price levels",
-  "stopLoss": "clear stop loss level with justification",
+  "entry": "clear, backtestable entry condition with specific price levels",
+  "exit": "clear, backtestable exit condition with specific price levels",
+  "stopLoss": "clear stop loss level",
   "confidence": "low|medium|high",
-  "reasoning": "detailed reasoning citing specific CMC data points",
+  "reasoning": "cite specific data: multi-timeframe analysis, technicals, market context",
   "indicators": ["indicator1", "indicator2"],
   "riskLevel": "low|medium|high",
-  "marketRegime": "bullish|bearish|neutral|volatile"
+  "marketRegime": "bullish|bearish|neutral|volatile",
+  "backtest": {
+    "estimatedReturn": "e.g. +5.2% in 14 days",
+    "estimatedWinRate": "e.g. 58%",
+    "riskRewardRatio": "e.g. 1:2.1",
+    "maxDrawdown": "e.g. -3.8%"
+  }
 }`;
 
   try {
@@ -69,7 +95,7 @@ Output ONLY valid JSON (no markdown, no code blocks):
       model: MODEL,
       messages: [{ role: "user", content: prompt }],
       temperature: 0.3,
-      max_tokens: 800,
+      max_tokens: 900,
     });
 
     const text = response.choices[0]?.message?.content || "";
@@ -94,6 +120,7 @@ function parseStrategy(text: string): StrategyResult {
       indicators: json.indicators || ["RSI", "MA"],
       riskLevel: json.riskLevel || "medium",
       marketRegime: json.marketRegime || "neutral",
+      backtest: json.backtest || undefined,
     };
   } catch {
     return fallbackStrategy("UNKNOWN", 0, {});
@@ -102,30 +129,56 @@ function parseStrategy(text: string): StrategyResult {
 
 function fallbackStrategy(symbol: string, bnbPrice: number, cmcData?: CMCDataBundle): StrategyResult {
   const token = cmcData?.tokenQuote as any;
-  const fear = cmcData?.fearGreed as any;
-  const metrics = cmcData?.globalMetrics as any;
+  const technicals = cmcData?.technicals as any;
 
-  if (token || fear || bnbPrice > 0) {
+  if (token || bnbPrice > 0) {
+    const change1h = token?.percent_change_1h ?? 0;
     const change24h = token?.percent_change_24h ?? 0;
+    const change7d = token?.percent_change_7d ?? 0;
     const price = token?.price ?? bnbPrice;
-    const fgValue = fear?.value ?? 50;
-    const regime = fgValue > 60 ? "bullish" : fgValue < 30 ? "bearish" : "neutral";
-    const risk = Math.abs(change24h) > 5 ? "high" : Math.abs(change24h) > 2 ? "medium" : "low";
-    const confidence = fgValue > 40 && fgValue < 80 ? "medium" : "low";
+    const rsi = technicals?.rsi14 ?? 50;
+    const vol = technicals?.volatility24h ?? 3;
+    const trendConsistent = technicals?.isTrendConsistent ?? true;
+
+    const regime = rsi > 60 ? "bullish" : rsi < 40 ? "bearish" : "neutral";
+    const risk = vol > 5 ? "high" : vol > 2 ? "medium" : "low";
+    const confidence = rsi > 30 && rsi < 70 ? "medium" : "low";
     const direction = change24h >= 0 ? "pullback entry on dips" : "momentum continuation";
 
+    const entryPct = 0.05;
+    const targetPct = Math.abs(change24h) > 0 ? Math.max(0.03, Math.abs(change24h) / 100 * 2) : 0.05;
+    const stopPct = Math.min(0.08, vol / 100);
+    const entryPrice = change24h >= 0 ? price * (1 - entryPct * 0.6) : price * 0.95;
+    const exitPrice = entryPrice * (1 + targetPct);
+    const stopPrice = entryPrice * (1 - Math.max(0.03, stopPct));
+    const rewardPct = ((exitPrice - entryPrice) / entryPrice) * 100;
+    const riskPct = ((entryPrice - stopPrice) / entryPrice) * 100;
+    const rr = riskPct > 0 ? (rewardPct / riskPct).toFixed(1) : "1.0";
+    const winRate = regime === "bullish" ? 60 : regime === "bearish" ? 45 : 52;
+    const estReturn = ((winRate / 100) * rewardPct - ((100 - winRate) / 100) * riskPct);
+
+    const multiTfNote = trendConsistent
+      ? `All timeframes align (1h: ${change1h >= 0 ? "+" : ""}${change1h.toFixed(2)}%, 24h: ${change24h.toFixed(2)}%, 7d: ${change7d.toFixed(2)}%)`
+      : `Mixed signals across timeframes (1h: ${change1h >= 0 ? "+" : ""}${change1h.toFixed(2)}%, 24h: ${change24h.toFixed(2)}%, 7d: ${change7d.toFixed(2)}%)`;
+
     return {
-      strategy: `${regime === "bullish" ? "Accumulation" : "Defensive"} strategy for ${symbol}`,
-      entry: direction === "pullback entry on dips"
+      strategy: `${regime === "bullish" ? "Accumulation" : "Defensive"} ${direction} strategy for ${symbol}`,
+      entry: direction.includes("pullback")
         ? `Enter on 3-5% pullback from current $${price.toFixed(2)}`
         : `Enter on confirmed support at $${(price * 0.95).toFixed(2)}`,
-      exit: `Take profit at $${(price * (1 + (change24h >= 0 ? 0.03 : 0.05))).toFixed(2)}`,
-      stopLoss: `Stop loss at $${(price * 0.95).toFixed(2)} (5% below entry)`,
+      exit: `Take profit at $${exitPrice.toFixed(2)} (${rewardPct >= 0 ? "+" : ""}${rewardPct.toFixed(1)}%)`,
+      stopLoss: `Stop loss at $${stopPrice.toFixed(2)} (${riskPct.toFixed(1)}% below entry)`,
       confidence: confidence as "low" | "medium" | "high",
-      reasoning: `${symbol} at $${price.toFixed(2)} with ${change24h >= 0 ? "+" : ""}${change24h.toFixed(2)}% 24h. Fear & Greed: ${fgValue}/100. Market cap: $${token?.market_cap ? (token.market_cap / 1e9).toFixed(2) + "B" : "N/A"}. ${regime === "bullish" ? "Bullish market conditions favor accumulation." : "Neutral/bearish conditions suggest defensive positioning."}`,
-      indicators: ["RSI(14)", "MA(50)", "MA(200)", "Volume", "Fear & Greed"],
+      reasoning: `${symbol} at $${price.toFixed(2)}. ${multiTfNote}. RSI(14): ${rsi.toFixed(0)}. Volatility: ${vol.toFixed(1)}%. ${regime === "bullish" ? "Bullish conditions favor buying dips." : regime === "bearish" ? "Bearish conditions suggest tight stops." : "Neutral conditions suggest mean-reversion."}`,
+      indicators: ["RSI(14)", "MA(50)", "MA(200)", "Volume"],
       riskLevel: risk as "low" | "medium" | "high",
       marketRegime: regime,
+      backtest: {
+        estimatedReturn: `${estReturn >= 0 ? "+" : ""}${estReturn.toFixed(1)}% (14d)`,
+        estimatedWinRate: `${winRate}%`,
+        riskRewardRatio: `1:${rr}`,
+        maxDrawdown: `-${(riskPct).toFixed(1)}%`,
+      },
     };
   }
 
@@ -139,5 +192,11 @@ function fallbackStrategy(symbol: string, bnbPrice: number, cmcData?: CMCDataBun
     indicators: ["RSI(14)", "MA(50)", "MA(200)", "Volume"],
     riskLevel: "medium",
     marketRegime: "neutral",
+    backtest: {
+      estimatedReturn: "N/A",
+      estimatedWinRate: "50%",
+      riskRewardRatio: "1:1",
+      maxDrawdown: "N/A",
+    },
   };
 }

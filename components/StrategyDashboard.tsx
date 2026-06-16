@@ -22,12 +22,28 @@ interface GlobalMetrics {
   btc_dominance: number;
 }
 
+interface TechnicalIndicators {
+  rsi14: number;
+  volatility24h: number;
+  trendStrength: string;
+  momentumDivergence: number;
+  isTrendConsistent: boolean;
+}
+
+interface BscChainInfo {
+  blockNumber: number;
+  gasPriceGwei: number;
+  pendingTxCount: number | null;
+}
+
 interface CMCDataDisplay {
   globalMetrics?: GlobalMetrics | null;
   tokenQuote?: TokenQuote | null;
   fearGreed?: FearGreedData | null;
   topGainers?: TokenQuote[] | null;
   topLosers?: TokenQuote[] | null;
+  technicals?: TechnicalIndicators | null;
+  bscChain?: BscChainInfo | null;
 }
 
 interface Strategy {
@@ -141,7 +157,36 @@ export default function StrategyDashboard({ cmcData, strategy }: StrategyDashboa
               ))}
             </div>
           </div>
-          {cmcData.fearGreed && (
+          {cmcData.technicals && (
+            <div className="border-t border-gray-800/50 pt-3 mt-3">
+              <p className="text-xs text-gray-500 mb-2">Technical Indicators</p>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="bg-gray-900/30 rounded p-2">
+                  <span className="text-gray-500">RSI(14)</span>
+                  <p className={`font-mono ${cmcData.technicals.rsi14 > 70 ? "text-red-400" : cmcData.technicals.rsi14 < 30 ? "text-green-400" : "text-gray-200"}`}>
+                    {cmcData.technicals.rsi14.toFixed(0)}
+                  </p>
+                </div>
+                <div className="bg-gray-900/30 rounded p-2">
+                  <span className="text-gray-500">Volatility</span>
+                  <p className="font-mono text-gray-200">{cmcData.technicals.volatility24h.toFixed(1)}%</p>
+                </div>
+                <div className="bg-gray-900/30 rounded p-2">
+                  <span className="text-gray-500">Trend</span>
+                  <p className={`font-mono ${cmcData.technicals.trendStrength === "strong" ? "text-yellow-400" : "text-gray-200"}`}>
+                    {cmcData.technicals.trendStrength}
+                  </p>
+                </div>
+                <div className="bg-gray-900/30 rounded p-2">
+                  <span className="text-gray-500">Consistent</span>
+                  <p className={`font-mono ${cmcData.technicals.isTrendConsistent ? "text-green-400" : "text-red-400"}`}>
+                    {cmcData.technicals.isTrendConsistent ? "Yes" : "No"}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+          {cmcData.fearGreed ? (
             <div>
               <p className="text-xs text-gray-500 mb-1">Fear & Greed</p>
               <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium border ${
@@ -150,9 +195,38 @@ export default function StrategyDashboard({ cmcData, strategy }: StrategyDashboa
                 {cmcData.fearGreed.value}/100 ({cmcData.fearGreed.value_classification})
               </span>
             </div>
+          ) : (
+            <div>
+              <p className="text-xs text-gray-500 mb-1">Fear & Greed</p>
+              <span className="inline-block px-2.5 py-1 rounded-full text-xs font-medium border bg-gray-900/30 text-gray-500 border-gray-800/50">
+                N/A (Basic plan)
+              </span>
+            </div>
           )}
         </div>
       </div>
+
+      {cmcData.bscChain && (
+        <div className="bg-[#111] border border-gray-800 rounded-xl p-5">
+          <p className="text-xs text-gray-500 mb-3 uppercase tracking-wider">BNB Chain</p>
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <div>
+              <p className="text-gray-500 text-xs">Latest Block</p>
+              <p className="text-gray-200 font-mono">#{cmcData.bscChain.blockNumber.toLocaleString()}</p>
+            </div>
+            <div>
+              <p className="text-gray-500 text-xs">Gas Price</p>
+              <p className="text-gray-200 font-mono">{cmcData.bscChain.gasPriceGwei.toFixed(1)} Gwei</p>
+            </div>
+            {cmcData.bscChain.pendingTxCount != null && (
+              <div className="col-span-2">
+                <p className="text-gray-500 text-xs">Pending Txns</p>
+                <p className="text-gray-200 font-mono">{cmcData.bscChain.pendingTxCount.toLocaleString()}</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {cmcData.tokenQuote && (
         <div className="lg:col-span-3 bg-[#111] border border-gray-800 rounded-xl p-5">

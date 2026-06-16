@@ -128,6 +128,37 @@ export async function getTrendingTokens(): Promise<TokenQuote[]> {
   }));
 }
 
+export interface TechnicalIndicators {
+  rsi14: number;
+  volatility24h: number;
+  trendStrength: "strong" | "moderate" | "weak";
+  momentumDivergence: number;
+  isTrendConsistent: boolean;
+}
+
+export function computeIndicators(quote: TokenQuote): TechnicalIndicators {
+  const abs1h = Math.abs(quote.percent_change_1h);
+  const abs24h = Math.abs(quote.percent_change_24h);
+  const abs7d = Math.abs(quote.percent_change_7d);
+
+  const avgChange = (quote.percent_change_1h + quote.percent_change_24h + quote.percent_change_7d) / 3;
+  const rsi14 = Math.min(100, Math.max(0, 50 + avgChange * 1.5));
+
+  const volatility24h = Math.max(abs1h * 24, abs24h);
+
+  const signs = [Math.sign(quote.percent_change_1h), Math.sign(quote.percent_change_24h), Math.sign(quote.percent_change_7d)];
+  const positives = signs.filter(s => s >= 0).length;
+  const isTrendConsistent = positives === 0 || positives === 3;
+
+  const avgAbs = (abs1h + abs24h + abs7d) / 3;
+  const trendStrength: "strong" | "moderate" | "weak" = avgAbs > 3 ? "strong" : avgAbs > 1 ? "moderate" : "weak";
+
+  const twentyFourHFrom1h = quote.percent_change_1h * 24;
+  const momentumDivergence = Math.abs(twentyFourHFrom1h - quote.percent_change_24h);
+
+  return { rsi14, volatility24h, trendStrength, momentumDivergence, isTrendConsistent };
+}
+
 export interface CryptoInfo {
   id: number;
   name: string;

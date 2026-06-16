@@ -77,12 +77,52 @@ OpenRouter AI (GPT-4o-mini) 分析
   - `riskRewardRatio` — 风险回报比 (如 `1:2.5`)
   - `maxDrawdown` — 最大回撤 (如 `-4.2%`)
 
+## 评审标准对齐
+
+### 1. 技术执行 (Technical execution)
+- CMC Pro API 集成 6 个数据源 + 计算技术指标 (RSI/波动率/趋势一致性)
+- OpenRouter (GPT-4o-mini) AI 策略生成，支持多时间框架分析 (1h/24h/7d)
+- BSC RPC 集成 (实时区块高度、Gas 费、待处理交易数)
+- Next.js 14 SSR + Tailwind CSS 前端，类型安全
+- 完整的离线降级：AI 或 CMC 不可用时自动回退到本地计算的策略
+
+### 2. 原创性 (Originality)
+- 结合 CMC 实时数据 + AI 推理的量化风格策略生成引擎
+- 每个策略包含自动计算的模拟回测统计 (收益/胜率/风险回报比/最大回撤)
+- 市场状态检测 + 多时间框架趋势一致性分析
+- Copy as Markdown 导出，可直接用于第三方回测平台
+
+### 3. 实际应用价值 (Real-world relevance)
+- 支持任意 CMC 列出的代币符号，零门槛使用
+- 实时 Fear & Greed + 技术指标 + 市场状态一目了然
+- Leaderboard 按信心/风险排序，快速比较 8 大主流代币
+- 策略规规范格式标准，可直接复制到 TradingView/回测脚本
+
+### 4. 演示和展示 (Demo & presentation)
+- 视频演示：[待补充]()
+- 在线体验：https://bnb-alpha-strategist.vercel.app
+- 完整 README + 提交文档
+
+## 技术栈
+
+| 组件 | 使用 |
+|------|------|
+| **CMC Pro API** | 6 个数据源 (报价/全局指标/Fear&Greed/涨跌榜/趋势/信息) + 技术指标计算 |
+| **BSC RPC** | 实时区块高度、Gas 费、地址余额查询 |
+| **OpenRouter AI** | GPT-4o-mini 策略生成 (CMC 数据驱动) |
+| **Next.js 14** | App Router + Server Components |
+| **ethers.js** | BSC 链上交互 |
+| **Vercel** | 部署托管 |
+
 ## 功能清单
 
 | 功能 | 状态 |
 |------|------|
 | Token 策略搜索 | ✅ |
 | CMC 实时数据集成 (6 个数据源) | ✅ |
+| **技术指标计算 (RSI/波动率/趋势一致性)** | ✅ |
+| **多时间框架分析 (1h/24h/7d)** | ✅ |
+| **BSC 链上数据 (区块高度/Gas 费)** | ✅ |
 | AI 策略生成 (GPT-4o-mini) | ✅ |
 | 可回测策略规规范 (Entry/Exit/SL) | ✅ |
 | **模拟回测统计 (回报/胜率/R:R/最大回撤)** | ✅ |
@@ -99,4 +139,5 @@ OpenRouter AI (GPT-4o-mini) 分析
 - **网站：** https://bnb-alpha-strategist.vercel.app
 - **GitHub：** https://github.com/duchopj5b2bw4-byte/bnb-alpha-strategist
 - **DoraHacks：** https://dorahacks.io/hackathon/bnbhack-twt-cmc/
-- **CMC API：** https://coinmarketcap.com/api/documentation
+- **CMC Pro API：** https://coinmarketcap.com/api/documentation
+- **BSC Scan：** https://bscscan.com

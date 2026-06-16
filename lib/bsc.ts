@@ -79,6 +79,30 @@ export async function getBalance(address: string): Promise<string> {
 
 
 
+export interface BscChainData {
+  blockNumber: number;
+  gasPriceGwei: number;
+  pendingTxCount: number | null;
+}
+
+export async function getBscChainData(): Promise<BscChainData | null> {
+  const provider = getProvider();
+  try {
+    const [block, feeData, pending] = await Promise.all([
+      provider.getBlockNumber(),
+      provider.getFeeData(),
+      provider.send("txpool_status", []).catch(() => null),
+    ]);
+    return {
+      blockNumber: block,
+      gasPriceGwei: feeData.gasPrice ? Number(ethers.formatUnits(feeData.gasPrice, "gwei")) : 0,
+      pendingTxCount: pending ? parseInt(pending.pending, 16) : null,
+    };
+  } catch {
+    return null;
+  }
+}
+
 export function shortenAddress(addr: string): string {
   return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
 }

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getBalance } from "@/lib/bsc";
-import { getGlobalMetrics, getTokenQuote, getFearGreedIndex, getTopGainers, getTopLosers, getTrendingTokens, getCryptoInfo } from "@/lib/cmc";
+import { getBalance, getBscChainData } from "@/lib/bsc";
+import { getGlobalMetrics, getTokenQuote, getFearGreedIndex, getTopGainers, getTopLosers, getTrendingTokens, getCryptoInfo, computeIndicators } from "@/lib/cmc";
 import { generateStrategy } from "@/lib/openai";
 
 export async function GET(req: NextRequest) {
@@ -22,10 +22,15 @@ export async function GET(req: NextRequest) {
 
   const bnbPrice = bnbQuote?.price ?? 0;
   const trendDirection = trending?.[0]?.symbol === symbol ? "trending" : "not-trending";
+  const technicals = tokenQuote ? computeIndicators(tokenQuote) : null;
 
   if (address) {
     try { balance = await getBalance(address); } catch {}
   }
+
+  const [bscChain] = await Promise.all([
+    getBscChainData().catch(() => null),
+  ]);
 
   const cmcData: Record<string, unknown> = {
     globalMetrics,
@@ -36,6 +41,8 @@ export async function GET(req: NextRequest) {
     trending,
     cryptoInfo,
     trendDirection,
+    technicals,
+    bscChain,
   };
 
   let strategy = null;
