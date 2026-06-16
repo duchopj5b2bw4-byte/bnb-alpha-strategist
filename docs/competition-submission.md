@@ -27,33 +27,32 @@ OpenRouter AI (GPT-4o-mini) 分析
 ## 技术架构
 
 ```
-┌─ User Browser ─────────────────────────┐
-│  Next.js 14 SSR + Tailwind CSS         │
-│  /analyze/BTC → StrategyCard + Dashboard│
-│  /leaderboard → 8 token 实时排名        │
-└────────────┬───────────────────────────┘
+┌─ User Browser ───────────────────────────┐
+│  Next.js 14 SSR + Tailwind CSS           │
+│  /analyze/BTC → StrategyCard + Dashboard │
+│  /leaderboard → 8 token 实时排名          │
+└────────────┬─────────────────────────────┘
              │
-┌────────────▼───────────────────────────┐
-│  API Route: /api/analyze?symbol=BTC    │
-│                                         │
-│  ┌─────────────┐  ┌──────────────────┐  │
-│  │ CMC Pro API │  │ OpenRouter AI    │  │
-│  │ (实时市场数据) │  │ (GPT-4o-mini)    │  │
-│  │ 5 个数据源   │  │ 策略 JSON 输出   │  │
-│  └─────────────┘  └──────────────────┘  │
-│                                         │
-│  ┌─────────────┐                        │
-│  │ BSC RPC     │                        │
-│  │ (BNB Price) │                        │
-│  └─────────────┘                        │
-└─────────────────────────────────────────┘
+┌────────────▼─────────────────────────────┐
+│  API Route: /api/analyze?symbol=BTC      │
+│                                           │
+│  ┌─────────────┐  ┌───────────────────┐  │
+│  │ CMC Pro API │  │ OpenRouter AI     │  │
+│  │ (实时市场数据) │  │ (GPT-4o-mini)     │  │
+│  │ 6 个数据源   │  │ 策略 JSON 输出    │  │
+│  └──────┬──────┘  └───────────────────┘  │
+│         │  BNB Price 改用 CMC 报价       │
+│         ▼                                │
+│  (BSC RPC 仅用于地址余额查询)            │
+└───────────────────────────────────────────┘
 ```
 
 ## CMC 数据集成
 
 | 数据 | 端点 | 用途 |
 |------|------|------|
-| Token 报价 | `/v1/cryptocurrency/quotes/latest` | 价格/涨跌/市值/成交量 |
+| BNB 报价 | `/v1/cryptocurrency/quotes/latest?symbol=BNB` | BNB 实时价格 (替代 BSC RPC) |
+| Token 报价 | `/v1/cryptocurrency/quotes/latest` | 目标代币价格/涨跌/市值/成交量 |
 | Fear & Greed | `/v1/fear-and-greed/latest` | 市场情绪判断 |
 | 涨幅榜 | `/v1/cryptocurrency/listings/latest?sort=percent_change_24h` | 趋势确认 |
 | 跌幅榜 | `/v1/cryptocurrency/listings/latest?sort_dir=asc` | 风险预警 |
@@ -62,7 +61,7 @@ OpenRouter AI (GPT-4o-mini) 分析
 ## AI 策略生成
 
 **模型:** GPT-4o-mini (via OpenRouter, 免费)
-**输入:** CMC 实时数据 + BNB Price
+**输入:** CMC 实时数据 (6 个数据源)
 **输出结构:**
 - `strategy` — 策略名称
 - `entry` — 入场条件 (含价格)
@@ -72,15 +71,22 @@ OpenRouter AI (GPT-4o-mini) 分析
 - `indicators` — 参考指标
 - `marketRegime` — 市场状态 (bullish/bearish/neutral/volatile)
 - `reasoning` — AI 推理过程
+- `backtest` — 模拟回测统计:
+  - `estimatedReturn` — 预计 14 天收益 (如 `+8.5%`)
+  - `estimatedWinRate` — 预计胜率 (如 `62%`)
+  - `riskRewardRatio` — 风险回报比 (如 `1:2.5`)
+  - `maxDrawdown` — 最大回撤 (如 `-4.2%`)
 
 ## 功能清单
 
 | 功能 | 状态 |
 |------|------|
 | Token 策略搜索 | ✅ |
-| CMC 实时数据集成 (5 个数据源) | ✅ |
+| CMC 实时数据集成 (6 个数据源) | ✅ |
 | AI 策略生成 (GPT-4o-mini) | ✅ |
 | 可回测策略规规范 (Entry/Exit/SL) | ✅ |
+| **模拟回测统计 (回报/胜率/R:R/最大回撤)** | ✅ |
+| **CMC BNB 报价 (替代失效的 BSC RPC)** | ✅ |
 | Copy as Markdown 导出 | ✅ |
 | X/Twitter 一键分享 | ✅ |
 | Leaderboard (8 token 实时排名) | ✅ |
